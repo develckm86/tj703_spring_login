@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: l09_spring_login
+  datasource:
+    url: jdbc:mysql://localhost:3306/login_study
+    username: login_study_dev
+    password: 1234
+server:
+  port: 9999
