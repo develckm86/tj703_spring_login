@@ -37,7 +37,8 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/user/logout.do">
-                        ~~님 로그인(로그아웃)
+                        <span th:text="${session.loginUser?.name}"></span>
+                        님 로그인(로그아웃)
                     </a>
                 </li>
                 <li class="nav-item">

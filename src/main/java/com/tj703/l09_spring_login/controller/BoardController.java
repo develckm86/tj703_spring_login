@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class BoardController {
     @GetMapping("/list.do")
     public String list(){
+
         //USER 권한 이상만 조회가능 (로그인이 안되어 있거나 GUEST 는 조회 불가능)
+        //아니면 index
         return "board/list";// template/board/list.html 을 렌더링 하겠다.
     }
 }
