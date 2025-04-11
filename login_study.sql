@@ -9,6 +9,8 @@ CREATE TABLE users(
     role ENUM('GUEST','USER','MANAGER','ADMIN'),
     name VARCHAR(255) NOT NULL
 );
+# 1234 해시코드
+# $2a$10$HDA7deEKi9SlqcFSJriojOBQMDCNYDdwd0U87qRXhc5f6aQ5oveoS
 INSERT INTO users(id,pw,role,name)
 VALUES ('user1','1234','USER','사용자'),
        ('guest1','1234','GUEST','게스트'),
