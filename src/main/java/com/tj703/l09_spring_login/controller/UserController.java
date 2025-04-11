@@ -7,7 +7,9 @@ import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +36,16 @@ public class UserController {
     ) {
         //로그인되어 있는 유저는 다시 로그인 폼으로 올 수 없다.
         //Object loginUserObj=session.getAttribute("loginUser");
+
+
+        SecurityContext securityContext = (SecurityContext) session.getAttribute("SPRING_SECURITY_CONTEXT");
+        //SecurityContext : 인증정보만 포함시켜 세셔탈취(공격자가 사용자의 세션 ID를 탈취해서, 마치 로그인한 것처럼 서버에 요청을 보내는 공격 방식) 공격을 막음
+        if (securityContext != null) {
+            Authentication auth = securityContext.getAuthentication();
+            CustomUserDetails loginUserDetails = (CustomUserDetails) auth.getPrincipal();
+        }
+
+
         if(loginUser==null) {
             System.out.println(""+error);
             if(error) {model.addAttribute("error","아이디나 비밀번호를 확인하세요.");}
