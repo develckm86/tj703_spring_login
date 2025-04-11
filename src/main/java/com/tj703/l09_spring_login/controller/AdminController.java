@@ -13,5 +13,4 @@ public class AdminController {
 
     @GetMapping("/user/list.do")
     public void userList() {}
-
 }
