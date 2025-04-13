@@ -44,7 +44,7 @@ public class SecurityConfig {
                                 "/favicon.ico"
                         ).permitAll()
                         .requestMatchers("/admin/**").hasAnyRole("ADMIN", "MANAGER")
-                        .anyRequest().authenticated()//나머지 요청은 로그인 인증을 사용하겠다.-> form 이 없으면 403 에러
+                        .anyRequest().authenticated()//나머지 요청은 로그인 인증을 사용, 로그인 안되어 있거나 권한이 없으면 403 에러
                 )
                 .addFilterBefore(jwtCookieLoginFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
