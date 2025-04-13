@@ -28,25 +28,37 @@ public class JwtCookieLoginFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String uri = request.getRequestURI();
         System.out.println(uri);
+        String [] permitUris = {
+                "/",
+                "/index.html",
+                "/user/api/login.do",
+                "/css/",
+                "/js/",
+                "/images/",
+                "/favicon.ico"};
+        // "/user/login.do?continue".startsW
+        for (String permitUri : permitUris) {
+            boolean permitted = permitUri.startsWith(uri);
+            if (permitted) {
+                System.out.println("자동로그인 제외");
+                filterChain.doFilter(request, response);
+                return;
+            }
+        }
         System.out.println("자동로그인 시작");
         //요청해더에서 Authorization 만 추출(토큰이 존재)
         String jwtToken = null;
-        if (request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
-                if ("jwt".equals(cookie.getName())) {
-                    jwtToken = cookie.getValue();
-                    break;
-                }
-            }
-        }
+        String authHeader = request.getHeader("Authorization");
 
-        if(jwtToken != null){
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            jwtToken = authHeader.substring(7); // "Bearer " 이후의 토큰만 추출
+
             if(jwtUtil.validateToken(jwtToken)){ //토큰이 유요한 서명인지 확인
                 String username = jwtUtil.getUsername(jwtToken); //토큰에 담긴 유저 확인
-                System.out.println("jtw.username : " + username);
                 //토큰에 저장된 아이디로 다시 유저 조회
                 CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(username);
                 //spring security가 로그인 인증 때 사용함 (강제 로그인)
+                System.out.println("jtw.username : " + userDetails.getRole());
                 UsernamePasswordAuthenticationToken authToken=new UsernamePasswordAuthenticationToken(
                         userDetails,                // Principal (인증된 사용자 정보)
                         null,                       // Credential (보통은 비밀번호인데, 인증 후엔 null로 처리)

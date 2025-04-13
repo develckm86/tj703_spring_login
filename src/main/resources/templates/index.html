@@ -31,6 +31,8 @@
     <p><button onclick="loadAdminUserList()">관리자 권한 유저조회</button></p>
     <div id="adminUserList"></div>
     <script>
+
+
         const loginForm=document.forms["loginForm"];
         const userInfo=document.getElementById("userInfo");
         const adminUserList=document.getElementById("adminUserList")
@@ -50,28 +52,46 @@
             console.log(resp.status)
             if(resp.ok){
                 const result= await resp.json();
-                userInfoHtml(result)
+                userInfoHtml(JSON.parse(result.user));
+                localStorage.setItem("jwt",result.jwt)
             }
         }
-        async function loadUserInfo(user){
-            if(!user){
-                const resp= await fetch("/user/api/check.do")
+        async function loadUserInfo(){
+            const jwt=localStorage.getItem("jwt");
+            if(jwt){
+                const resp= await fetch("/user/api/check.do",{
+                    headers :{
+                        'Authorization': 'Bearer '+jwt
+                    }
+                })
                 if(resp.ok) {
-                    user=await resp.json()
+                    const user=await resp.json()
                     userInfoHtml(user)
                     return;
                 }
+            }else{
                 alert("로그인 하세요.")
             }
         }
         async function loadAdminUserList(){
-            const resp= await fetch("/admin/user/list.do")
-            if(resp.ok) {
-                const users=await resp.json()
-                adminUserList.innerHTML=users
-                return;
+            const jwt=localStorage.getItem("jwt");
+            if(jwt){
+                const resp= await fetch("/admin/user/list.do",{
+                    headers :{
+                        'Authorization': 'Bearer '+jwt
+                    }
+                })
+                if(resp.ok) {
+                    const users=await resp.json()
+                    adminUserList.innerHTML=users
+                    return;
+                }else {
+                    alert("권한이 없습니다.")
+
+                }
+            }else{
+                alert("로그인 하세요.")
             }
-            alert("권한이 없습니다.")
         }
     </script>
 </body>

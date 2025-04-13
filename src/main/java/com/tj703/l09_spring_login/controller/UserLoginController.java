@@ -1,5 +1,8 @@
 package com.tj703.l09_spring_login.controller;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tj703.l09_spring_login.dto.CustomUserDetails;
 import com.tj703.l09_spring_login.entity.User;
 import com.tj703.l09_spring_login.util.JwtUtil;
@@ -14,6 +17,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 @RestController
@@ -27,10 +32,10 @@ public class UserLoginController {
 
 
     @PostMapping("/login.do")
-    public ResponseEntity<CustomUserDetails> login(
+    public ResponseEntity<Map<String,String>> login(
             @RequestBody User user
             , HttpServletResponse response
-    ) {
+    ) throws JsonProcessingException {
         UserDetails userDetails =  userDetailsService.loadUserByUsername(user.getId());
 
         System.out.println(userDetails);
@@ -41,14 +46,15 @@ public class UserLoginController {
         //인증 검사에 사용할 정보로 저장
         SecurityContextHolder.getContext().setAuthentication(authToken);
         String jwt=jwtUtil.generateToken(userDetails.getUsername());
-        Cookie jwtCookie = new Cookie("jwt", jwt);
-        jwtCookie.setPath("/");
-        //jwtCookie.setHttpOnly(true);
-        //jwtCookie.setSecure(true);
-        jwtCookie.setMaxAge(1000*60*30);
-        response.addCookie(jwtCookie);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String userDetailsJson=objectMapper.writeValueAsString((CustomUserDetails)userDetails);
+        Map<String,String> map=new HashMap<>();
+        map.put("jwt",jwt);
+        map.put("user", userDetailsJson);
 
-        return ResponseEntity.ok((CustomUserDetails) userDetails);
+
+
+        return ResponseEntity.ok(map);
     }
 
     @GetMapping("/check.do")
