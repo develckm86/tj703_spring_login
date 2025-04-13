@@ -1,5 +1,6 @@
 package com.tj703.l09_spring_login.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tj703.l09_spring_login.entity.User;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -11,12 +12,12 @@ import java.util.List;
 @AllArgsConstructor
 public class CustomUserDetails implements UserDetails {
     private final User user;
-
+    @JsonIgnore
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_"+user.getRole()));
     }
-
+    @JsonIgnore
     @Override
     public String getPassword() {
         return user.getPw();
@@ -26,7 +27,10 @@ public class CustomUserDetails implements UserDetails {
     public String getUsername() {
         return user.getId();
     }
-    public User getUser() {
-        return user;
+    public String getName(){
+        return user.getName();
+    }
+    public String getRole(){
+        return user.getRole();
     }
 }

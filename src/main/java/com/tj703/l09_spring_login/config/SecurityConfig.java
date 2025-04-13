@@ -5,6 +5,7 @@ import com.tj703.l09_spring_login.util.JwtUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -32,41 +33,26 @@ public class SecurityConfig {
         //다른 사이트에서 요청이 온것인지 확인 가능
         return http
                 .csrf(AbstractHttpConfigurer::disable)//csrf 제외
-                .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                //세션을 사용하지 않겠다.
+                .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))//세션을 사용하지 않겠다.
                 .authorizeHttpRequests(auth->auth
+                        .requestMatchers(HttpMethod.POST, "/user/api/login.do").permitAll()
                         .requestMatchers(
-                                "/user/login.do",
-                                "/user/jwt/login.do",
+                                "/","/index.html",
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
                                 "/favicon.ico"
                         ).permitAll()
                         .requestMatchers("/admin/**").hasAnyRole("ADMIN", "MANAGER")
-                        .anyRequest().authenticated()//나머지 요청은 로그인 인증을 사용하겠다.
+                        .anyRequest().authenticated()//나머지 요청은 로그인 인증을 사용하겠다.-> form 이 없으면 403 에러
                 )
-                .formLogin((form)->form
-                        .loginPage("/user/login.do")
-                        //.loginProcessingUrl("/user/login.do")
-                        .failureUrl("/user/login.do?error=true")
-                        // 로그인 페이지와 동일한 이름의 컨트롤러를 자동으로 생성
-                        //.defaultSuccessUrl("/")
-                        .permitAll())
-
-                // (실제 로그인보다 jwtFilter로 로그인을 하겠다는 뜻 )
                 .addFilterBefore(jwtCookieLoginFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
     //로그인시 어떻게 할건지 동작정의 (UserDetailsService 구현 및 passwordEncoder 작성)
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
-        //최신버전에서는 자동으로 빌드 합니다,
         return http.getSharedObject(AuthenticationManagerBuilder.class).build();
-                //.userDetailsService(userDetailsService)
-                //.passwordEncoder(passwordEncoder())
-                //.and()
-                //.build();
 
     }
     //authenticationManager에서 로그인시 비밀번호 인코딩 방식 정의

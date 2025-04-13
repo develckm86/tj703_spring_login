@@ -18,11 +18,6 @@ class UserServiceImpTest {
     @Autowired
     private UserService userService;
     @Test
-    void login() {
-        Optional<User> userOpt = userService.login("user1", "1234");
-        userOpt.ifPresent(System.out::println);
-    }
-    @Test
     void bcrypt() {
         System.out.println(BCrypt.hashpw("1234", BCrypt.gensalt()));
     }

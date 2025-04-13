@@ -27,25 +27,13 @@ public class JwtCookieLoginFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String uri = request.getRequestURI();
-        String [] permitUris = {
-                "/user/login.do",
-                "/user/jwt/login.do",
-                "/css/",
-                "/js/",
-                "/images/",
-                "/favicon.ico"};
-        // "/user/login.do?continue".startsW
-        if(Arrays.stream(permitUris).anyMatch(uri::startsWith)){
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        System.out.println("로그인된 유저");
+        System.out.println(uri);
+        System.out.println("자동로그인 시작");
         //요청해더에서 Authorization 만 추출(토큰이 존재)
         String jwtToken = null;
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
-                if ("JWT".equals(cookie.getName())) {
+                if ("jwt".equals(cookie.getName())) {
                     jwtToken = cookie.getValue();
                     break;
                 }
@@ -53,7 +41,6 @@ public class JwtCookieLoginFilter extends OncePerRequestFilter {
         }
 
         if(jwtToken != null){
-            //Bearer 토큰이 JWT임
             if(jwtUtil.validateToken(jwtToken)){ //토큰이 유요한 서명인지 확인
                 String username = jwtUtil.getUsername(jwtToken); //토큰에 담긴 유저 확인
                 System.out.println("jtw.username : " + username);
@@ -70,8 +57,8 @@ public class JwtCookieLoginFilter extends OncePerRequestFilter {
                 return;
             }
         }
-
-        response.sendRedirect("/user/login.do");
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+        //response.sendRedirect("/user/login.do");
         return;
     }
 }

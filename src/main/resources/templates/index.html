@@ -3,39 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <title>스프링 로그인 수업</title>
-    <th:block th:insert="fragment/headerNav :: head"></th:block>
 </head>
 <body>
-    <header th:insert="fragment/headerNav :: nav"></header>
     <div class="container">
         <h1>스프링 로그인 수업</h1>
     </div>
-    <h2>타임리프 sec: 보안 속성</h2>
-    <ul>
-        <li sec:authorize="isAuthenticated()">
-            로그인한 사용자만 볼 수 있음
-        </li>
-        <li sec:authorize="isAnonymous()">
-            로그인하지 않은 사용자만 볼 수 있음
-        </li>
-        <li sec:authorize="hasRole('ADMIN')">
-            ADMIN 권한이 있는 사용자만 볼 수 있음
-        </li>
-        <li sec:authorize="hasAnyRole('ADMIN', 'MANAGER')">
-            ADMIN 또는 MANAGER 권한이 있는 사용자만 볼 수 있음
-        </li>
-        <li sec:authorize="hasAnyAuthority('ADMIN', 'MANAGER')">
-            여러 권한 중 하나라도 있으면 표시
-        </li>
-        <li>
-            <span sec:authentication="name"></span> <!-- getUsername() 값 -->
-        </li>
-        <li>
-            <span sec:authentication="principal.user.name"></span> <!-- CustomUserDetails의 getName() -->
-        </li>
-        <li>
-            <span sec:authentication="principal.authorities"></span> <!-- 권한 목록 출력 -->
-        </li>
-    </ul>
+    <div class="container">
+        <button onclick="loadUserInfo()">로그인한 유저</button>
+        <header id="userInfo"></header>
+        <h1 class="text-center mt-5">로그인 양식</h1>
+        <form  name="loginForm" action="#" method="post" style="width: 400px" class="mx-auto">
+            <div class="form-floating mb-3">
+                <input type="text" name="id" class="form-control" id="floatingInput" placeholder="USER ID">
+                <label for="floatingInput">username</label>
+            </div>
+            <div class="form-floating">
+                <input type="password"  name="pw" class="form-control" id="floatingPassword" placeholder="USER PW">
+                <label for="floatingPassword">password</label>
+            </div>
+            <div class="mt-3 text-end">
+                <button class="btn btn-lg btn-success">로그인</button>
+            </div>
+            <hr>
+
+        </form>
+    </div>
+    <p><button onclick="loadAdminUserList()">관리자 권한 유저조회</button></p>
+    <div id="adminUserList"></div>
+    <script>
+        const loginForm=document.forms["loginForm"];
+        const userInfo=document.getElementById("userInfo");
+        const adminUserList=document.getElementById("adminUserList")
+        const userInfoHtml=(user)=>userInfo.innerHTML=`<p>로그인한 유저 (${user.username}/${user.name})</p>`;
+        loginForm.onsubmit=async (e)=>{
+            e.preventDefault();
+            const formData=new FormData(loginForm)
+            const formDataObj=Object.fromEntries(formData.entries());
+            const resp=await fetch("/user/api/login.do",{
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formDataObj)
+
+            })
+            console.log(resp.status)
+            if(resp.ok){
+                const result= await resp.json();
+                userInfoHtml(result)
+            }
+        }
+        async function loadUserInfo(user){
+            if(!user){
+                const resp= await fetch("/user/api/check.do")
+                if(resp.ok) {
+                    user=await resp.json()
+                    userInfoHtml(user)
+                    return;
+                }
+                alert("로그인 하세요.")
+            }
+        }
+        async function loadAdminUserList(){
+            const resp= await fetch("/admin/user/list.do")
+            if(resp.ok) {
+                const users=await resp.json()
+                adminUserList.innerHTML=users
+                return;
+            }
+            alert("권한이 없습니다.")
+        }
+    </script>
 </body>
 </html>

@@ -23,9 +23,9 @@ public class JwtUtil {
     }
     private final long EXPIRATION = 1000*60*30; //30분
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    public String generateToken(User user) {
+    public String generateToken(String username) {
         return Jwts.builder()
-                .subject(user.getId()) //토큰 식별자로 사용자 아이디 사용
+                .subject(username) //토큰 식별자로 사용자 아이디 사용
                 .expiration(new Date(System.currentTimeMillis() + EXPIRATION)) //토큰 만료시간
                 //.signWith(getSecretKey(), SignatureAlgorithm.HS512)
                 .signWith(secretKey)//토큰 서명 (암호화)
