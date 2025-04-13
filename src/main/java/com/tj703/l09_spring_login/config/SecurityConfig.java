@@ -1,6 +1,6 @@
 package com.tj703.l09_spring_login.config;
 
-import com.tj703.l09_spring_login.filter.JwtFilter;
+import com.tj703.l09_spring_login.filter.JwtCookieLoginFilter;
 import com.tj703.l09_spring_login.util.JwtUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -9,6 +9,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -22,7 +23,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
     private final UserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
-    private final JwtFilter jwtFilter;
+    private final JwtCookieLoginFilter jwtCookieLoginFilter;
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         //CSRF는 Cross-Site Request Forgery (크로스 사이트 요청 위조)
@@ -30,23 +31,31 @@ public class SecurityConfig {
         //name="_csrf" value="z8djf8sd9fjs9fj9jfdskf" 이런 고유값을 생성해 넣으면
         //다른 사이트에서 요청이 온것인지 확인 가능
         return http
-                .csrf(csrf->csrf.disable())//csrf 제외
+                .csrf(AbstractHttpConfigurer::disable)//csrf 제외
                 .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 //세션을 사용하지 않겠다.
                 .authorizeHttpRequests(auth->auth
-                        .requestMatchers("/user/login.do","/css/**").permitAll() //접근을 허용함
-
+                        .requestMatchers(
+                                "/user/login.do",
+                                "/user/jwt/login.do",
+                                "/css/**",
+                                "/js/**",
+                                "/images/**",
+                                "/favicon.ico"
+                        ).permitAll()
+                        .requestMatchers("/admin/**").hasAnyRole("ADMIN", "MANAGER")
                         .anyRequest().authenticated()//나머지 요청은 로그인 인증을 사용하겠다.
                 )
                 .formLogin((form)->form
                         .loginPage("/user/login.do")
-                        .failureUrl("/user/login.do?error=true")
                         //.loginProcessingUrl("/user/login.do")
+                        .failureUrl("/user/login.do?error=true")
                         // 로그인 페이지와 동일한 이름의 컨트롤러를 자동으로 생성
                         //.defaultSuccessUrl("/")
                         .permitAll())
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+
                 // (실제 로그인보다 jwtFilter로 로그인을 하겠다는 뜻 )
+                .addFilterBefore(jwtCookieLoginFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
     //로그인시 어떻게 할건지 동작정의 (UserDetailsService 구현 및 passwordEncoder 작성)

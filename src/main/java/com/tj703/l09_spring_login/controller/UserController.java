@@ -3,18 +3,35 @@ package com.tj703.l09_spring_login.controller;
 import com.tj703.l09_spring_login.dto.CustomUserDetails;
 import com.tj703.l09_spring_login.entity.User;
 import com.tj703.l09_spring_login.service.UserService;
+import com.tj703.l09_spring_login.util.JwtUtil;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpCookie;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -24,7 +41,8 @@ import java.util.Optional;
 public class UserController {
 
     private final UserService userService;
-
+    private final UserDetailsService userDetailsService;
+    private final JwtUtil jwtUtil;
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     @GetMapping("/login.do")
     public String login(
@@ -47,7 +65,6 @@ public class UserController {
 
 
         if(loginUser==null) {
-            System.out.println(""+error);
             if(error) {model.addAttribute("error","아이디나 비밀번호를 확인하세요.");}
             return "user/login";
         }else{
@@ -55,34 +72,41 @@ public class UserController {
         }
 
     }
-//    @PostMapping("/login.do")
-//    public String loginAction(
-//            @ModelAttribute User user,
-//            HttpSession session
-//            ) {
-//        //DTO로 id, pw 파라미터를 파싱
-//        //로그인  : 1.db 에 저장된 유저가 id/pw 가 같은 사람이 존재
-//        //2. 만약 존재한다면 서버에 계속 접속하고 있는 척 해야합니다.
-//        //3. http 통신은 요청 응답을 하기 때문에 접속을 유지할 수 없다.
-//        //=> 때문에 서버에서 유지하는 객체인 세션을 만들어서 접속하는 척 합니다.
-//        //4. 만약 세션 객체를 만든 클라이언트가 다시 접속하면 서버가
-//        //클라이언트가 생성한 세션 객체를 요청한 동적리소스에 같이 제공
-//        System.out.println("loginAction");
-//        Optional<User> loginUserOpt=userService.login(user.getId(),user.getPw());
-//        if(loginUserOpt.isEmpty()){
-//            return "redirect:/user/login.do";
-//        }else{
-//            User loginUser=loginUserOpt.get();
-//            session.setAttribute("loginUser",loginUser);
-//            return "redirect:/";
-//        }
-//
-//    }
-    @GetMapping("/logout.do")
-    public String logoutAction( HttpSession session ) {
-        session.removeAttribute("loginUser");
-        //session.invalidate(); //만료시간을 다되게해서 삭제 (모든 세션 삭제)
-        //session 객체는 서버에서 기본 30분 유지
+//1.form에서 사용자 ID/PW 입력 → 서버가 인증
+//2.인증에 성공하면 → 서버가 JWT를 발급
+//3.이후 모든 요청은 → 클라이언트가 JWT를 헤더에 실어 보냄
+//4.JWT 필터에서 인증 수행 (UsernamePasswordAuthenticationToken 생성 등)
+    @PostMapping("/jwt/login.do")
+    public String jwtLogin(User user, HttpServletRequest request, HttpServletResponse response, HttpHeaders httpHeaders) {
+        System.out.println("jwtLogin");
+        CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(user.getId());
+        //spring security가 로그인 인증 때 사용함 (강제 로그인)
+        UsernamePasswordAuthenticationToken authToken=new UsernamePasswordAuthenticationToken(
+                userDetails,                // Principal (인증된 사용자 정보)
+                user.getPw(),                       // Credential ( 비밀번호인데)
+                userDetails.getAuthorities()); // 권한 목록 (ROLE_USER, ROLE_ADMIN 등)
+        SecurityContextHolder.getContext().setAuthentication(authToken); //스프링 시큘리티에서 저장
+        String tokenStr=jwtUtil.generateToken(user);
+        System.out.println("tokenStr:"+tokenStr);
+        // ✅ JWT를 HttpOnly 쿠키에 저장
+        Cookie jwtCookie = new Cookie("JWT", tokenStr);
+        jwtCookie.setHttpOnly(true);
+        jwtCookie.setPath("/");
+        jwtCookie.setMaxAge(60 * 60); // 1시간
+        response.addCookie(jwtCookie);
+        return "redirect:/";
+    }
+
+    @GetMapping("/jwt/logout.do")
+    public String logoutAction(
+            HttpServletResponse  response
+    ) {
+        SecurityContextHolder.getContext().setAuthentication(null);
+        Cookie cookie = new Cookie("JWT", "");
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
         return "redirect:/";
     }
 }

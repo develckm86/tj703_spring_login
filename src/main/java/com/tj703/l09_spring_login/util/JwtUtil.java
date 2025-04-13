@@ -1,10 +1,10 @@
 package com.tj703.l09_spring_login.util;
 
 import com.tj703.l09_spring_login.entity.User;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -22,7 +22,7 @@ public class JwtUtil {
         this.secretKey = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
     private final long EXPIRATION = 1000*60*30; //30분
-
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     public String generateToken(User user) {
         return Jwts.builder()
                 .subject(user.getId()) //토큰 식별자로 사용자 아이디 사용
@@ -50,12 +50,22 @@ public class JwtUtil {
     }
 
     public boolean validateToken(String token) {
-        try{
-            getUsername(token);
+        try {
+            Jwts.parser().verifyWith(secretKey).build().parseClaimsJws(token);
+            logger.info("유요한 서명");
             return true;
-        }catch (JwtException e){
-            e.printStackTrace();
-            return false;
+        } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
+
+            logger.error("잘못된 JWT 서명입니다.");
+        } catch (ExpiredJwtException e) {
+
+            logger.error("만료된 JWT 토큰입니다.");
+        } catch (UnsupportedJwtException e) {
+
+            logger.error("지원되지 않는 JWT 토큰입니다.");
+        } catch (IllegalArgumentException e) {
+
+            logger.error("JWT 토큰이 잘못되었습니다.");
         }
-    }
+        return false;    }
 }
