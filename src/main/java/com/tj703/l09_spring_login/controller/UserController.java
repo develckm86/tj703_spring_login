@@ -1,17 +1,21 @@
 package com.tj703.l09_spring_login.controller;
 
+import com.tj703.l09_spring_login.dto.UserValid;
 import com.tj703.l09_spring_login.entity.User;
 import com.tj703.l09_spring_login.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -70,23 +74,48 @@ public class UserController {
         return "redirect:/";
     }
     @GetMapping("/signup.do")
-    public String signup(){
+    public String signup(
+            Model model,
+            UserValid user) {
+        model.addAttribute("userValid", user);
         return "user/signup";
     }
     @PostMapping("/signup.do")
     public String signup(
-            @Valid @ModelAttribute User user,
+            @Valid @ModelAttribute UserValid user,
             BindingResult bindingResult,
+            HttpServletResponse response,
             Model model
-    ) {
+    ) throws IOException {
         //ModelAttribute or RequestBody 로 dto를 파싱할때 검증 @Valid
         if(bindingResult.hasErrors()) {
-            System.out.println(bindingResult.getFieldError());
-            model.addAttribute("errors", bindingResult.getFieldError());
+            //model.addAttribute("userValid", user); //자동으로 추가됨
             //model 에 더한 객체는 redirect 로 전달 불가
+            //오류가 있으면 렌더링하는 페이지에 user 가 전달됨
             return "/user/signup";
         }
-        System.out.println(user);
+        try {
+//            User userEntity=new User();
+//            userEntity.setPw(user.getPw());
+//            userEntity.setName(user.getName());
+//            userEntity.setId(user.getId());
+            User userEntity= User.builder()
+                    .pw(user.getPw())
+                    .name(user.getName())
+                    .id(user.getId())
+                    .build();
+
+
+            userService.guestSignup(userEntity);
+        }catch (IllegalArgumentException e){
+            e.printStackTrace();
+            logger.error(e.getMessage());
+            //response.sendError(409);
+        }catch (Exception e){
+            e.printStackTrace();
+            logger.error(e.getMessage());
+            //response.sendError(500);
+        }
         return  "redirect:/";
     }
 

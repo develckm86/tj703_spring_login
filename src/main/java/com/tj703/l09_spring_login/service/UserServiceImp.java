@@ -2,6 +2,7 @@ package com.tj703.l09_spring_login.service;
 
 import com.tj703.l09_spring_login.entity.User;
 import com.tj703.l09_spring_login.repository.UserRepository;
+import jakarta.persistence.EntityManager;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -14,6 +15,7 @@ import java.util.Optional;
 public class UserServiceImp implements UserService {
 
     private final UserRepository userRepository;
+    private final EntityManager entityManager;
 
     @Override
     public Optional<User> login(String id, String pw) {
@@ -29,5 +31,16 @@ public class UserServiceImp implements UserService {
         // 스프링 security 가 자동으로 구현
 
         return userRepository.findByIdAndPw(id, pw);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void guestSignup(User user) {
+        User existUser=entityManager.find(User.class, user.getId());
+        if(existUser!=null) throw new IllegalArgumentException("User already exists");
+        user.setRole("GUEST");
+        String pw=BCrypt.hashpw(user.getPw(), BCrypt.gensalt());
+        user.setPw(pw);
+        entityManager.persist(user);
     }
 }
