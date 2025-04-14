@@ -3,10 +3,13 @@ package com.tj703.l09_spring_login.controller;
 import com.tj703.l09_spring_login.entity.User;
 import com.tj703.l09_spring_login.service.UserService;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
@@ -66,4 +69,27 @@ public class UserController {
         //session 객체는 서버에서 기본 30분 유지
         return "redirect:/";
     }
+    @GetMapping("/signup.do")
+    public String signup(){
+        return "user/signup";
+    }
+    @PostMapping("/signup.do")
+    public String signup(
+            @Valid @ModelAttribute User user,
+            BindingResult bindingResult,
+            Model model
+    ) {
+        //ModelAttribute or RequestBody 로 dto를 파싱할때 검증 @Valid
+        if(bindingResult.hasErrors()) {
+            System.out.println(bindingResult.getFieldError());
+            model.addAttribute("errors", bindingResult.getFieldError());
+            //model 에 더한 객체는 redirect 로 전달 불가
+            return "/user/signup";
+        }
+        System.out.println(user);
+        return  "redirect:/";
+    }
+
+
+
 }

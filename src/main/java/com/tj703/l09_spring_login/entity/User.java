@@ -2,6 +2,7 @@ package com.tj703.l09_spring_login.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -14,6 +15,7 @@ import lombok.ToString;
 public class User {
     @Id
     @Column(name = "id", nullable = false)
+    @NotBlank(message = "아이디는 필수") //null "" "   "
     private String id;
 
     @JsonIgnore

@@ -28,12 +28,13 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(autu-> autu
-//                        .requestMatchers(HttpMethod.POST,"/login").permitAll()
+                        .requestMatchers(HttpMethod.POST,"/user/signup.do").permitAll()
                         .requestMatchers(
                                 "/",
                                 "/public/**", // /css/** or /js/** or /img/** ..
                                 "/favicon.ico",
-                                "/user/login.do"
+                                "/user/login.do",
+                                "/user/signup.do"
 
                         ).permitAll() //요청허용
                         .requestMatchers("/admin/**").hasAnyRole("ADMIN","MANAGER")
@@ -43,10 +44,11 @@ public class SecurityConfig {
                 .formLogin(form->form
                         .loginPage("/user/login.do")
                         // id-> username pw -> password 로 input의 name을 변경
-                        // spring security 가 자동으로 로그인액션 페이지를 생성하는데
-                        // url이 from의 url과 같다.
+                        // spring security 가 자동으로 로그인액션 페이지를 생성하는데 url이 로그인페이지와 같다.
                         .permitAll()
                 )
+                //formLogin : authorizeHttpRequests 에서 인증이 안된 유저에게
+                // /user/login.do로 리다이렉트 시키는 필터 설정
                 .build();
     }
 
