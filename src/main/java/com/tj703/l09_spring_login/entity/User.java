@@ -1,5 +1,6 @@
 package com.tj703.l09_spring_login.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,6 +16,7 @@ public class User {
     @Column(name = "id", nullable = false)
     private String id;
 
+    @JsonIgnore
     @Column(name = "pw", nullable = false)
     private String pw;
 

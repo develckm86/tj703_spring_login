@@ -35,28 +35,30 @@ public class UserController {
         }
 
     }
-    @PostMapping("/login.do")
-    public String loginAction(
-            @ModelAttribute User user,
-            HttpSession session
-            ) {
-        //DTO로 id, pw 파라미터를 파싱
-        //로그인  : 1.db 에 저장된 유저가 id/pw 가 같은 사람이 존재
-        //2. 만약 존재한다면 서버에 계속 접속하고 있는 척 해야합니다.
-        //3. http 통신은 요청 응답을 하기 때문에 접속을 유지할 수 없다.
-        //=> 때문에 서버에서 유지하는 객체인 세션을 만들어서 접속하는 척 합니다.
-        //4. 만약 세션 객체를 만든 클라이언트가 다시 접속하면 서버가
-        //클라이언트가 생성한 세션 객체를 요청한 동적리소스에 같이 제공
-        Optional<User> loginUserOpt=userService.login(user.getId(),user.getPw());
-        if(loginUserOpt.isEmpty()){
-            return "redirect:/user/login.do";
-        }else{
-            User loginUser=loginUserOpt.get();
-            session.setAttribute("loginUser",loginUser);
-            return "redirect:/";
-        }
-
-    }
+    // /logout  로그아웃 액션이 구현되어 있음
+    // user/login.do 가 자동 생성
+//    @PostMapping("/login.do")
+//    public String loginAction(
+//            @ModelAttribute User user,
+//            HttpSession session
+//            ) {
+//        //DTO로 id, pw 파라미터를 파싱
+//        //로그인  : 1.db 에 저장된 유저가 id/pw 가 같은 사람이 존재
+//        //2. 만약 존재한다면 서버에 계속 접속하고 있는 척 해야합니다.
+//        //3. http 통신은 요청 응답을 하기 때문에 접속을 유지할 수 없다.
+//        //=> 때문에 서버에서 유지하는 객체인 세션을 만들어서 접속하는 척 합니다.
+//        //4. 만약 세션 객체를 만든 클라이언트가 다시 접속하면 서버가
+//        //클라이언트가 생성한 세션 객체를 요청한 동적리소스에 같이 제공
+//        Optional<User> loginUserOpt=userService.login(user.getId(),user.getPw());
+//        if(loginUserOpt.isEmpty()){
+//            return "redirect:/user/login.do";
+//        }else{
+//            User loginUser=loginUserOpt.get();
+//            session.setAttribute("loginUser",loginUser);
+//            return "redirect:/";
+//        }
+//
+//    }
     @GetMapping("/logout.do")
     public String logoutAction( HttpSession session ) {
         session.removeAttribute("loginUser");
