@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/user/api")
-
+@CrossOrigin(origins ={ "http://localhost:5000"})
 public class UserLoginController {
     private final UserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
