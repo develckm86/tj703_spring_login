@@ -11,17 +11,18 @@ import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
-@Controller
+@RestController
 @RequestMapping("/user")
 @AllArgsConstructor
 public class UserController {
@@ -31,44 +32,25 @@ public class UserController {
     private final JwtUtil jwtUtil;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    @GetMapping("/login.do")
-    public String login(
-             @AuthenticationPrincipal UserDetails loginUser //security 에서 관리하는 인증된 유저
-    ) {
-        if(loginUser==null) {
-            return "user/login";
-        }else{
-            return "redirect:/";
-        }
+    //로그인폼 -> jwt/login.do 요청 {id:경민,pw:1234} ->
+    // 로그인이 되었다면 jwt 토큰 생성 후 응답 ->
+    // 로그인 양식에서 jwt 토큰을 받아서 로컬에 저장
 
-    }
-    // ?id=admin1&pw=1234
+    //{"jwt":"abk3123Fsfasf..."}
     @PostMapping("/jwt/login.do")
-    public String loginAction(
-            @ModelAttribute User user,
-            HttpServletResponse response
+    public ResponseEntity<Map<String,String>> loginAction(
+            @RequestBody User user
             ) {
         System.out.println("loginAction 중!");
-        UserDetails userDetails = null;
-        userDetails=customUserDetailsService.loadUserByUsername(user.getId());
-        System.out.println(userDetails.getUsername());
+        boolean isLogin=userService.loginHash(user);
+        if(isLogin) {
+            String jwt=jwtUtil.generateToken(user.getId());
+            Map<String,String> map= Collections.singletonMap("jwt",jwt);
+            return ResponseEntity.ok(map);
+        }
 
-        UsernamePasswordAuthenticationToken authToken=new UsernamePasswordAuthenticationToken(
-                userDetails,
-                user.getPw(),
-                userDetails.getAuthorities()
-        ); //로그인 -> 시큐리티에서 관리하는 유저 객체 토큰 발급
-
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-        //시큐리티에서 관리하는 로그인 유저(UserDetails)
-
-        Cookie jwt=new Cookie("jwt",jwtUtil.generateToken(userDetails.getUsername()));
-        jwt.setHttpOnly(true); //js 쿠키탈취 못하게
-        //jwt.setSecure(true); //https 통신에서만 쿠키보내겠다.
-        jwt.setPath("/");
-        jwt.setMaxAge(1000*60*30);
-        response.addCookie(jwt);
-        return "redirect:/";
+        return ResponseEntity.status(403).build();
+        //403 인증이 안됨 (유저가 없거나 비밀번호가 틀림)
     }
     // session
     // => session 만료,
@@ -77,16 +59,18 @@ public class UserController {
     // SecurityContextHolder.getContext().setAuthentication(null);
 
     // cookie+jwt => cookie 만료
-    @GetMapping("/logout.do")
-    public String logoutAction(
-            @CookieValue(name = "jwt",required = false) Cookie jwtCookie,
-            HttpServletResponse response
-    ) {
-        if(jwtCookie!=null){
-            jwtCookie.setMaxAge(0);
-            jwtCookie.setPath("/");
-            response.addCookie(jwtCookie);
-        }
-        return "redirect:/";
-    }
+
+    // localstorage + jwt => 브라우저 로컬저장소에 jwt 를 삭제
+//    @GetMapping("/logout.do")
+//    public String logoutAction(
+//            @CookieValue(name = "jwt",required = false) Cookie jwtCookie,
+//            HttpServletResponse response
+//    ) {
+//        if(jwtCookie!=null){
+//            jwtCookie.setMaxAge(0);
+//            jwtCookie.setPath("/");
+//            response.addCookie(jwtCookie);
+//        }
+//        return "redirect:/";
+//    }
 }

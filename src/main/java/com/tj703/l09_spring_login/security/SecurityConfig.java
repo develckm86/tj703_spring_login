@@ -37,11 +37,7 @@ public class SecurityConfig {
                 //jwt로 쿠키로 로그인할때 설정
                 .sessionManagement(session->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .formLogin(form->form
-                        .loginPage("/user/login.do") //login form
-                        .failureUrl("/user/login?error=true")
-                        .permitAll()
-                )
+
                 //세션 기반의 이증을 사용하지 않겠다. -> jwt 기반 인증을 생성해서 추가해야함
                 .addFilterBefore(jwtLoginFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
