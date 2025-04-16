@@ -70,8 +70,23 @@ public class UserController {
         response.addCookie(jwt);
         return "redirect:/";
     }
+    // session
+    // => session 만료,
+
+    // security+session (/logout)
+    // SecurityContextHolder.getContext().setAuthentication(null);
+
+    // cookie+jwt => cookie 만료
     @GetMapping("/logout.do")
-    public String logoutAction(  ) {
+    public String logoutAction(
+            @CookieValue(name = "jwt",required = false) Cookie jwtCookie,
+            HttpServletResponse response
+    ) {
+        if(jwtCookie!=null){
+            jwtCookie.setMaxAge(0);
+            jwtCookie.setPath("/");
+            response.addCookie(jwtCookie);
+        }
         return "redirect:/";
     }
 }
