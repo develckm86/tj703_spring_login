@@ -2,9 +2,7 @@ package com.tj703.l09_spring_login.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.springframework.stereotype.Component;
 
 @Getter
@@ -13,7 +11,11 @@ import org.springframework.stereotype.Component;
 @Entity
 @Table(name = "users")
 @Component
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class User {
+
     @Id
     @Column(name = "id", nullable = false)
     private String id;

@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface UserService {
     //Optional<User> login(String id, String pw);
     List<User> findAll();
+    User findById(String id);
+    void save(User user);
 }

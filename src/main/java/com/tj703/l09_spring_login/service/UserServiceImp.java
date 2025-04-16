@@ -19,4 +19,10 @@ public class UserServiceImp implements UserService {
     public List<User> findAll() {
         return userRepository.findAll();
     }
+    public User findById(String id) {
+        return userRepository.findById(id).orElse(null);
+    }
+    public void save(User user) {
+        userRepository.save(user);
+    }
 }

@@ -69,8 +69,6 @@ public class JwtCookieLoginFilter extends OncePerRequestFilter {
                 return;
             }
         }
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-        //response.sendRedirect("/user/login.do");
-        return;
+        filterChain.doFilter(request, response);
     }
 }
