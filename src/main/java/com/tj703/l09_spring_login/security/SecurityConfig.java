@@ -33,6 +33,7 @@ public class SecurityConfig {
                                 "/user/jwt/login.do", //post loginAction
                                 "/favicon.ico"
                                 ).permitAll()
+                        .requestMatchers("/admin/**").hasAnyRole("ADMIN","MANAGER")
                         .anyRequest().authenticated())
                 //jwt로 쿠키로 로그인할때 설정
                 .sessionManagement(session->
