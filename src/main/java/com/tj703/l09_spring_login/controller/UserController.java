@@ -28,6 +28,7 @@ import java.util.*;
 @RestController
 @RequestMapping("/user")
 @AllArgsConstructor
+@CrossOrigin(origins = {"http://localhost:3000"})
 public class UserController {
 
     private final UserService userService;
@@ -50,8 +51,8 @@ public class UserController {
         System.out.println("loginAction 중!"+user);
         Optional<User> userOpt=userService.loginHash(user); //로그인 완료 후 가져오는 user
         if(userOpt.isPresent()) {
-            String jwt=jwtUtil.generateToken(user.getId());
             LoginDto loginDto=new LoginDto();
+            String jwt=jwtUtil.generateToken(user.getId());
             loginDto.setJwt(jwt);
             loginDto.setUser(userOpt.get());
             return ResponseEntity.ok(loginDto);
