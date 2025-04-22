@@ -31,6 +31,7 @@ public class SecurityConfig {
                                 "/",
                                 "/public/**",
                                 "/user/jwt/login.do", //post loginAction
+                                "/user/jwt/check.do",
                                 "/favicon.ico"
                                 ).permitAll()
                         .requestMatchers("/admin/**").hasAnyRole("ADMIN","MANAGER")

@@ -9,4 +9,5 @@ public interface UserService {
     Optional<User> login(String id, String pw);
     Optional<User> loginHash(User user);
     List<User> list();
+    Optional<User> detail(String id);
 }
