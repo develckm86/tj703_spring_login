@@ -1,6 +1,7 @@
 package com.tj703.l09_spring_login.controller;
 
 import com.tj703.l09_spring_login.dto.LoginDto;
+import com.tj703.l09_spring_login.dto.OAuthUser;
 import com.tj703.l09_spring_login.dto.UserLoginValid;
 import com.tj703.l09_spring_login.entity.User;
 import com.tj703.l09_spring_login.jwt.JwtUtil;
@@ -54,7 +55,29 @@ public class UserController {
         }
         return ResponseEntity.badRequest().build();
     }
-
+    @PostMapping("/oauth/login.do")
+    public ResponseEntity<LoginDto> oauthLoginAction(
+        @Valid @RequestBody OAuthUser oAuthUser
+    ){
+        System.out.printf("oAuthUser: %s", oAuthUser);
+        //만약 가입이 되어 있지 않다 :404
+        //만약 가입은 되어 있는데 소셜이 잘못되어 있다: 409+LoginDto
+        Optional<User> userOpt=userService.detail(oAuthUser.getEmail());
+        if(userOpt.isPresent()) {
+            User user=userOpt.get();
+            LoginDto loginDto=new LoginDto();
+            loginDto.setUser(user);
+            if(user.getOauth().equals(oAuthUser.getOauth())) {
+                //로그인 성공 =>jwt 발급
+                String jwt=jwtUtil.generateToken(user.getId());
+                loginDto.setJwt(jwt);
+                return ResponseEntity.ok(loginDto);
+            }
+            return ResponseEntity.status(409).body(loginDto);
+            //소셜로그인을 잘못함 => 가입된 소셜로 다시로그인
+        }
+        return ResponseEntity.notFound().build(); //가입된 유저가 없어서 가입페이지로
+    }
 
     @PostMapping("/jwt/login.do")
     public ResponseEntity<LoginDto> loginAction(

@@ -33,6 +33,7 @@ public class SecurityConfig {
                                 "/",
                                 "/public/**",
                                 "/user/jwt/login.do", //post loginAction
+                                "/user/oauth/login.do", //post loginAction
                                 "/user/jwt/check.do",
                                 "/favicon.ico"
                                 ).permitAll()

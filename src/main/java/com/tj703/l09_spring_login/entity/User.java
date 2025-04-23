@@ -18,12 +18,19 @@ public class User {
     private String id;
 
     @JsonIgnore
-    @Column(name = "pw", nullable = false)
+    @Column(name = "pw")
     private String pw;
 
     @Lob
     @Column(name = "role")
     private String role;
+
+    @Lob
+    @Column(name = "oauth")
+    private String oauth;
+
+    @Column(name = "picture")
+    private String picture;
 
     @Column(name = "name", nullable = false)
     private String name;
