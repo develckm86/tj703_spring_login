@@ -55,6 +55,32 @@ public class UserController {
         }
         return ResponseEntity.badRequest().build();
     }
+    @PostMapping("/oauth/signup.do")
+    public ResponseEntity<LoginDto> signupAction(
+            @Valid @RequestBody OAuthUser oAuthUser){
+        //성공히 바로 로그인(회원가입+로그인)
+        System.out.printf("oAuthUser: %s", oAuthUser);
+        User user=User.builder()
+                .role("USER").id(oAuthUser.getEmail()).name(oAuthUser.getName()).picture(oAuthUser.getPicture())
+                .oauth(oAuthUser.getOauth()).build();
+        try {
+            userService.register(user);
+            Optional<User> loginUserOpt=userService.detail(user.getId());
+            String jwt=jwtUtil.generateToken(oAuthUser.getEmail());
+            LoginDto loginDto=new LoginDto();
+            loginDto.setJwt(jwt);
+            loginDto.setUser(loginUserOpt.get());
+            return ResponseEntity.ok(loginDto);
+        }catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            logger.error(e.getMessage());
+            return ResponseEntity.status(409).build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error(e.getMessage());
+            return ResponseEntity.status(500).build();
+        }
+    }
     @PostMapping("/oauth/login.do")
     public ResponseEntity<LoginDto> oauthLoginAction(
         @Valid @RequestBody OAuthUser oAuthUser

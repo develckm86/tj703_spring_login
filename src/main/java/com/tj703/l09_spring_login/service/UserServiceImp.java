@@ -2,6 +2,7 @@ package com.tj703.l09_spring_login.service;
 
 import com.tj703.l09_spring_login.entity.User;
 import com.tj703.l09_spring_login.repository.UserRepository;
+import jakarta.persistence.EntityManager;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -15,6 +16,7 @@ import java.util.Optional;
 public class UserServiceImp implements UserService {
 
     private final UserRepository userRepository;
+    private final EntityManager entityManager;
 
     @Override
     public Optional<User> login(String id, String pw) {
@@ -42,6 +44,16 @@ public class UserServiceImp implements UserService {
     @Override
     public Optional<User> detail(String id) {
         return userRepository.findById(id);
+    }
+
+    @Override
+    @Transactional
+    public void register(User user) {
+        User existUser=entityManager.find(User.class, user.getId());
+        if(existUser!=null){
+            throw new IllegalArgumentException("이미 존재합니다.");
+        }
+        entityManager.persist(user);
     }
 
 }

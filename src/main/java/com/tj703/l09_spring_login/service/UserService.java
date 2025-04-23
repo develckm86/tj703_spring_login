@@ -10,4 +10,8 @@ public interface UserService {
     Optional<User> loginHash(User user);
     List<User> list();
     Optional<User> detail(String id);
+    void register(User user);
+
+
+
 }
