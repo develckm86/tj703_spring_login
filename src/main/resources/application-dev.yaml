@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/login_study
+    username: login_study_dev
+    password: 1234
+server:
+  port: 7777
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG

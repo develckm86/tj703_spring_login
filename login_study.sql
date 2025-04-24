@@ -1,8 +1,9 @@
 DROP DATABASE IF EXISTS login_study;
-DROP USER IF EXISTS 'login_study_dev'@'localhost';
+DROP USER IF EXISTS 'login_study_dev'@'%';
 CREATE DATABASE login_study CHAR SET utf8;
-CREATE USER 'login_study_dev'@'localhost' IDENTIFIED BY '1234';
-GRANT SELECT,INSERT,UPDATE,DELETE ON login_study.* TO  'login_study_dev'@'localhost';
+CREATE USER 'login_study_dev'@'%' IDENTIFIED BY '12345678';
+GRANT SELECT,INSERT,UPDATE,DELETE ON login_study.* TO  'login_study_dev'@'%';
+flush PRIVILEGES;
 USE login_study;
 CREATE TABLE users(
     id VARCHAR(255) PRIMARY KEY,
