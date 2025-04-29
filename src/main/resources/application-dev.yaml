@@ -1,8 +1,11 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/login_study
+#    url: jdbc:mysql://localhost:3306/login_study
+    url: jdbc:mysql://host.docker.internal:3306/login_study
     username: login_study_dev
-    password: 1234
+    password: 12345678
+#    도커를 생성한 host의 local로 접속
+#    도커에서 내컴퓨터의 mysql로 접속하는 것도 외부에서 접속하는 것이기 때문에 login_study_dev@% 어디서든 접근가능하게 바꾼다.
 server:
   port: 7777
 logging:

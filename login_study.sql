@@ -1,5 +1,7 @@
 DROP DATABASE IF EXISTS login_study;
 DROP USER IF EXISTS 'login_study_dev'@'%';
+DROP USER IF EXISTS 'login_study_dev'@'localhost';
+# 만약 삭제하지 않으면 % 와 충돌
 CREATE DATABASE login_study CHAR SET utf8;
 CREATE USER 'login_study_dev'@'%' IDENTIFIED BY '12345678';
 GRANT SELECT,INSERT,UPDATE,DELETE ON login_study.* TO  'login_study_dev'@'%';

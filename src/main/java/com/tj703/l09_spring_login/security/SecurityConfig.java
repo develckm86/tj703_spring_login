@@ -32,6 +32,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/",
                                 "/public/**",
+                                "index.html",
+                                "/assets/**",
                                 "/user/jwt/login.do", //post loginAction
                                 "/user/oauth/login.do", //post oauth loginAction
                                 "/user/oauth/signup.do", //post oauth signupAction
