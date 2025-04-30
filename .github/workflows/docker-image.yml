@@ -19,6 +19,7 @@ jobs:
           echo "mysql.url=${{secrets.MYSQL_URL}}" >> ./src/main/resources/env.properties
           echo "mysql.user=${{secrets.MYSQL_USER}}" >> ./src/main/resources/env.properties
           echo "mysql.pw=${{secrets.MYSQL_PW}}" >> ./src/main/resources/env.properties
+          echo "ssl.pw=${{secrets.SSL_PW}}" >> ./src/main/resources/env.properties
 
 
       - name: Set image tag
