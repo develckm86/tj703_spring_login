@@ -2,28 +2,25 @@ package com.tj703.l09_spring_login.controller;
 
 import com.tj703.l09_spring_login.dto.LoginDto;
 import com.tj703.l09_spring_login.dto.OAuthUser;
+import com.tj703.l09_spring_login.dto.SignupUser;
 import com.tj703.l09_spring_login.dto.UserLoginValid;
 import com.tj703.l09_spring_login.entity.User;
 import com.tj703.l09_spring_login.jwt.JwtUtil;
-import com.tj703.l09_spring_login.security.CustomUserDetails;
 import com.tj703.l09_spring_login.security.CustomUserDetailsService;
+import com.tj703.l09_spring_login.service.FileUploadS3Service;
 import com.tj703.l09_spring_login.service.UserService;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.*;
+import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.bcrypt.BCrypt;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 
 @RestController
@@ -40,6 +37,44 @@ public class UserController {
     //로그인폼 -> jwt/login.do 요청 {id:경민,pw:1234} ->
     // 로그인이 되었다면 jwt 토큰 생성 후 응답 ->
     // 로그인 양식에서 jwt 토큰을 받아서 로컬에 저장
+    private static final FileUploadS3Service fileService=new FileUploadS3Service();
+
+    @PostMapping("/signup.do")
+    public ResponseEntity<LoginDto> signupAction(
+            @Valid @ModelAttribute SignupUser signupUser
+    ){
+        try {
+            System.out.println(signupUser.getPictureFile().getContentType());
+            System.out.println(signupUser.getPictureFile().getName());
+            String picture=fileService.uploadProfileImage(signupUser.getPictureFile(),signupUser.getId());
+            System.out.println("picture :"+picture);
+            User user=User.builder()
+                    .id(signupUser.getId())
+                    .pw(signupUser.getPw())
+                    .name(signupUser.getName())
+                    .picture(picture)
+                    .role("USER")
+                    .build();
+            userService.register(user);
+            String jwt=jwtUtil.generateToken(user.getId());
+            LoginDto loginDto=new LoginDto();
+            loginDto.setUser(user);
+            loginDto.setJwt(jwt);
+            return ResponseEntity.ok(loginDto);
+        }catch (NullPointerException | FileUploadException e){
+            e.printStackTrace();
+            logger.error(e.getMessage());
+            return ResponseEntity.badRequest().build(); //400 잘못된 이미지로 저장실패
+        }catch (IOException e){
+            e.printStackTrace();
+            logger.error(e.getMessage());
+            return ResponseEntity.status(507).build(); //507 Insufficient Storage
+        } catch (Exception e){
+            logger.error(e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
     @GetMapping("/jwt/check.do")
     public ResponseEntity<LoginDto> checkLogin(
             @AuthenticationPrincipal UserDetails userDetails

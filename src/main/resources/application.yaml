@@ -2,5 +2,12 @@ spring:
   application:
     name: l09_spring_login
   profiles:
-    include: deploy
-#    include: dev
+    include: deploy, aws
+#    include: dev, aws
+server:
+  ssl:
+    enabled: true
+    key-store: classpath:keystore.p12  # src/main/resources에 복사한 경우
+    key-store-type: PKCS12
+    key-store-password: ${ssl.pw}
+    key-alias: myssl

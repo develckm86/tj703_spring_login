@@ -7,6 +7,21 @@
 </head>
 <body>
     <header th:insert="fragment/headerNav :: nav"></header>
+    <form id="signup">
+        <input type="file" name="img">
+    </form>
+    <script>
+        const signup=document.getElementById("signup");
+        signup.onsubmit=async (e)=>{
+            const formData= new FormData(e.target);
+            fetch("/signup.do",{
+                method:'POST',
+                body:formData
+
+            })
+        }
+
+    </script>
     <div class="container">
         <h1 class="text-center mt-5">스프링 SPA jwt 로그인 수업(도커 자동 빌드 및 배포)</h1>
         <div id="containerBody">

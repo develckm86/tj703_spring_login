@@ -37,6 +37,7 @@ public class SecurityConfig {
                                 "/user/jwt/login.do", //post loginAction
                                 "/user/oauth/login.do", //post oauth loginAction
                                 "/user/oauth/signup.do", //post oauth signupAction
+                                "/user/signup.do", //post oauth signupAction
                                 "/user/jwt/check.do",
                                 "/favicon.ico"
                                 ).permitAll()
