@@ -4,4 +4,10 @@ spring:
     username: ${mysql.user}
     password: ${mysql.pw}
 server:
-  port: 80
+  port: 443
+  ssl:
+    enabled: true
+    key-store: classpath:keystore.p12  # src/main/resources에 복사한 경우
+    key-store-type: PKCS12
+    key-store-password: ${ssl.pw}
+    key-alias: myssl
