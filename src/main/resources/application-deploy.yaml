@@ -1,0 +1,7 @@
+spring:
+  datasource:
+    url: ${mysql.url}
+    username: ${mysql.user}
+    password: ${mysql.pw}
+server:
+  port: 80
