@@ -2,6 +2,7 @@ package com.tj703.l09_spring_login.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -12,7 +13,8 @@ import software.amazon.awssdk.services.s3.model.*;
 
 import java.io.IOException;
 import java.util.Arrays;
-@Service
+
+@Component
 public class FileUploadS3Service {
     @Value("${cloud.aws.credentials.access-key}")
     private String accessKey;

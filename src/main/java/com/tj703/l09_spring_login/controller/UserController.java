@@ -37,7 +37,7 @@ public class UserController {
     //로그인폼 -> jwt/login.do 요청 {id:경민,pw:1234} ->
     // 로그인이 되었다면 jwt 토큰 생성 후 응답 ->
     // 로그인 양식에서 jwt 토큰을 받아서 로컬에 저장
-    private static final FileUploadS3Service fileService=new FileUploadS3Service();
+    private final FileUploadS3Service fileService;
 
     @PostMapping("/signup.do")
     public ResponseEntity<LoginDto> signupAction(
