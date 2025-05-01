@@ -4,4 +4,4 @@ spring:
     username: ${mysql.user}
     password: ${mysql.pw}
 server:
-  port: 80
+  port: 443
