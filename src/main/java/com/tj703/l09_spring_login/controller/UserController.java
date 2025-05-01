@@ -5,23 +5,15 @@ import com.tj703.l09_spring_login.dto.OAuthUser;
 import com.tj703.l09_spring_login.dto.UserLoginValid;
 import com.tj703.l09_spring_login.entity.User;
 import com.tj703.l09_spring_login.jwt.JwtUtil;
-import com.tj703.l09_spring_login.security.CustomUserDetails;
 import com.tj703.l09_spring_login.security.CustomUserDetailsService;
 import com.tj703.l09_spring_login.service.UserService;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.bcrypt.BCrypt;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -40,6 +32,7 @@ public class UserController {
     //로그인폼 -> jwt/login.do 요청 {id:경민,pw:1234} ->
     // 로그인이 되었다면 jwt 토큰 생성 후 응답 ->
     // 로그인 양식에서 jwt 토큰을 받아서 로컬에 저장
+
     @GetMapping("/jwt/check.do")
     public ResponseEntity<LoginDto> checkLogin(
             @AuthenticationPrincipal UserDetails userDetails
