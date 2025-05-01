@@ -2,10 +2,12 @@ package com.tj703.l09_spring_login.controller;
 
 import com.tj703.l09_spring_login.dto.LoginDto;
 import com.tj703.l09_spring_login.dto.OAuthUser;
+import com.tj703.l09_spring_login.dto.SignupVaild;
 import com.tj703.l09_spring_login.dto.UserLoginValid;
 import com.tj703.l09_spring_login.entity.User;
 import com.tj703.l09_spring_login.jwt.JwtUtil;
 import com.tj703.l09_spring_login.security.CustomUserDetailsService;
+import com.tj703.l09_spring_login.service.FileUploadS3Service;
 import com.tj703.l09_spring_login.service.UserService;
 import jakarta.validation.Valid;
 import lombok.*;
@@ -15,7 +17,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 @RestController
@@ -25,13 +31,56 @@ import java.util.*;
 public class UserController {
 
     private final UserService userService;
-    private final CustomUserDetailsService customUserDetailsService;
     private final JwtUtil jwtUtil;
+    private final FileUploadS3Service fileService;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     //로그인폼 -> jwt/login.do 요청 {id:경민,pw:1234} ->
     // 로그인이 되었다면 jwt 토큰 생성 후 응답 ->
     // 로그인 양식에서 jwt 토큰을 받아서 로컬에 저장
+    @PostMapping("/signup.do")
+    public ResponseEntity<LoginDto> signupAction(
+            @Valid @ModelAttribute SignupVaild signupVaild
+            ) throws IOException {
+        try {
+
+            String pictureUrl=fileService.uploadProfileImage(
+                    signupVaild.getPictureFile(),
+                    signupVaild.getId());
+            User user=User.builder()
+                    .role("USER")
+                    .id(signupVaild.getId())
+                    .pw(signupVaild.getPw())
+                    .name(signupVaild.getName())
+                    .picture(pictureUrl)
+                    .build();
+            userService.register(user);
+            User savedUser=userService.detail(user.getId()).get();
+            String jwt=jwtUtil.generateToken(savedUser.getId());
+            LoginDto loginDto=new LoginDto();
+            loginDto.setUser(savedUser);
+            loginDto.setJwt(jwt);
+            return ResponseEntity.ok(loginDto);
+
+        }catch (IOException e){
+            //507 저장실패 Insufficient Storage
+            //400 요청실패 이미지 형식이 잘못죔
+            e.printStackTrace();
+            logger.error(e.getMessage());
+            return ResponseEntity.status(507).build();
+        }catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            logger.error(e.getMessage());
+            return ResponseEntity.status(409).build(); //이미 존재하는 유저
+        }catch (Exception e) {
+            e.printStackTrace();
+            logger.error(e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+
+    }
+
+
 
     @GetMapping("/jwt/check.do")
     public ResponseEntity<LoginDto> checkLogin(
@@ -118,25 +167,5 @@ public class UserController {
         return ResponseEntity.status(403).build();
         //403 인증이 안됨 (유저가 없거나 비밀번호가 틀림)
     }
-    // session
-    // => session 만료,
 
-    // security+session (/logout)
-    // SecurityContextHolder.getContext().setAuthentication(null);
-
-    // cookie+jwt => cookie 만료
-
-    // localstorage + jwt => 브라우저 로컬저장소에 jwt 를 삭제
-//    @GetMapping("/logout.do")
-//    public String logoutAction(
-//            @CookieValue(name = "jwt",required = false) Cookie jwtCookie,
-//            HttpServletResponse response
-//    ) {
-//        if(jwtCookie!=null){
-//            jwtCookie.setMaxAge(0);
-//            jwtCookie.setPath("/");
-//            response.addCookie(jwtCookie);
-//        }
-//        return "redirect:/";
-//    }
 }

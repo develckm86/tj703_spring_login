@@ -20,6 +20,10 @@ jobs:
           echo "mysql.user=${{secrets.MYSQL_USER}}" >> ./src/main/resources/env.properties
           echo "mysql.pw=${{secrets.MYSQL_PW}}" >> ./src/main/resources/env.properties
           echo "ssl.pw=${{secrets.SSL_PW}}" >> ./src/main/resources/env.properties
+          echo "aws.access.key=${{secrets.AWS_ACCESS_KEY}}" >> ./src/main/resources/env.properties
+          echo "aws.secret.key=${{secrets.AWS_SECRET_KEY}}" >> ./src/main/resources/env.properties
+          echo "aws.s3.bucket=${{secrets.AWS_S3_BUCKET}}" >> ./src/main/resources/env.properties
+          echo "aws.s3.region=${{secrets.AWS_S3_REGION}}" >> ./src/main/resources/env.properties
 
 
       - name: Set image tag
