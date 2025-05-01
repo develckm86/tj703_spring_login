@@ -53,6 +53,8 @@ public class UserServiceImp implements UserService {
         if(existUser!=null){
             throw new IllegalArgumentException("이미 존재합니다.");
         }
+        String pw=BCrypt.hashpw(user.getPw(), BCrypt.gensalt());
+        user.setPw(pw);
         entityManager.persist(user);
     }
 
